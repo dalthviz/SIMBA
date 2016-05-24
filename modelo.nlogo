@@ -2,6 +2,7 @@ globals [
   percent-similar  ;; on the average, what percent of a turtle's neighbors
                    ;; are the same color as that turtle?
   percent-unhappy  ;; what percent of the turtles are unhappy?
+  global-identity  ;; pesos asociados a los posibles valores que cada dimension de los agentes puede tomar
 ]
 
 turtles-own [
@@ -10,6 +11,9 @@ turtles-own [
   similar-nearby   ;; how many neighboring patches have a turtle with my color?
   other-nearby ;; how many have a turtle of another color?
   total-nearby  ;; sum of previous two variables
+  identity ;; vector de identidad propio de la tortuga
+  saliences ;; importancia de cada una de las dimensiones que la tortuga tiene en su vector identity
+  num-similar ;;porcentaje de similares que desearia tener como minimo en su vecindario
 ]
 
 to setup
@@ -21,10 +25,11 @@ to setup
   ;; create turtles on random patches.
   ask n-of number patches
     [ sprout 1
-      [ set color red ] ]
+      [ set color red set num-similar %-similar-wanted ] 
+       ]
   ;; turn half the turtles green
   ask n-of (number / 2) turtles
-    [ set color green ]
+    [ set color green  set num-similar %-similar-wanted ]
   update-variables
   reset-ticks
 end
@@ -75,14 +80,14 @@ to update-globals
 end
 
 
-; Copyright 1997 Uri Wilensky.
+; Basado en el modelo desarrollado por Uri Wilensky Copyright 1997.
 ; See Info tab for full copyright and license.
 @#$#@#$#@
 GRAPHICS-WINDOW
-341
-10
-708
-398
+611
+68
+978
+456
 25
 25
 7.0
@@ -106,10 +111,10 @@ ticks
 30.0
 
 MONITOR
-263
-330
-339
-375
+533
+388
+609
+433
 % unhappy
 percent-unhappy
 1
@@ -117,10 +122,10 @@ percent-unhappy
 11
 
 MONITOR
-264
-187
-339
-232
+534
+245
+609
+290
 % similar
 percent-similar
 1
@@ -128,10 +133,10 @@ percent-similar
 11
 
 PLOT
-13
-141
-262
-284
+283
+199
+532
+342
 Percent Similar
 time
 %
@@ -146,10 +151,10 @@ PENS
 "percent" 1.0 0 -2674135 true "" "plot percent-similar"
 
 PLOT
-12
-286
-261
-429
+282
+344
+531
+487
 Percent Unhappy
 time
 %
@@ -164,40 +169,40 @@ PENS
 "percent" 1.0 0 -10899396 true "" "plot percent-unhappy"
 
 SLIDER
-19
-22
-231
-55
+289
+80
+501
+113
 number
 number
 500
 2500
-1440
+2090
 10
 1
 NIL
 HORIZONTAL
 
 SLIDER
-19
-95
-231
-128
+289
+153
+501
+186
 %-similar-wanted
 %-similar-wanted
 0
 100
-55
+32
 1
 1
 %
 HORIZONTAL
 
 BUTTON
-48
-58
-128
-91
+318
+116
+398
+149
 setup
 setup
 NIL
@@ -211,10 +216,10 @@ NIL
 1
 
 BUTTON
-129
-58
-209
-91
+399
+116
+479
+149
 go
 go
 T
@@ -227,57 +232,27 @@ NIL
 NIL
 1
 
+SLIDER
+290
+32
+501
+65
+policy-force
+policy-force
+0
+1
+0.5
+0.01
+1
+NIL
+HORIZONTAL
+
 @#$#@#$#@
-## WHAT IS IT?
-
-This project models the behavior of two types of turtles in a mythical pond. The red turtles and green turtles get along with one another. But each turtle wants to make sure that it lives near some of "its own." That is, each red turtle wants to live near at least some red turtles, and each green turtle wants to live near at least some green turtles. The simulation shows how these individual preferences ripple through the pond, leading to large-scale patterns.
-
-This project was inspired by Thomas Schelling's writings about social systems (such as housing patterns in cities).
-
-## HOW TO USE IT
-
-Click the SETUP button to set up the turtles. There are equal numbers of red and green turtles. The turtles move around until there is at most one turtle on a patch.  Click GO to start the simulation. If turtles don't have enough same-color neighbors, they jump to a nearby patch.
-
-The NUMBER slider controls the total number of turtles. (It takes effect the next time you click SETUP.)  The %-SIMILAR-WANTED slider controls the percentage of same-color turtles that each turtle wants among its neighbors. For example, if the slider is set at 30, each green turtle wants at least 30% of its neighbors to be green turtles.
-
-The % SIMILAR monitor shows the average percentage of same-color neighbors for each turtle. It starts at about 50%, since each turtle starts (on average) with an equal number of red and green turtles as neighbors. The % UNHAPPY monitor shows the percent of turtles that have fewer same-color neighbors than they want (and thus want to move). Both monitors are also plotted.
-
-## THINGS TO NOTICE
-
-When you execute SETUP, the red and green turtles are randomly distributed throughout the pond. But many turtles are "unhappy" since they don't have enough same-color neighbors. The unhappy turtles jump to new locations in the vicinity. But in the new locations, they might tip the balance of the local population, prompting other turtles to leave. If a few red turtles move into an area, the local green turtles might leave. But when the green turtles move to a new area, they might prompt red turtles to leave that area.
-
-Over time, the number of unhappy turtles decreases. But the pond becomes more segregated, with clusters of red turtles and clusters of green turtles.
-
-In the case where each turtle wants at least 30% same-color neighbors, the turtles end up with (on average) 70% same-color neighbors. So relatively small individual preferences can lead to significant overall segregation.
-
-## THINGS TO TRY
-
-Try different values for %-SIMILAR-WANTED. How does the overall degree of segregation change?
-
-If each turtle wants at least 40% same-color neighbors, what percentage (on average) do they end up with?
-
-## EXTENDING THE MODEL
-
-Incorporate social networks into this model.  For instance, have unhappy turtles decide on a new location based on information about what a neighborhood is like from other turtles in their network.
-
-Change the rules for turtle happiness.  One idea: suppose that the turtles need some minimum threshold of "good neighbors" to be happy with their location.  Suppose further that they don't always know if someone makes a good neighbor. When they do, they use that information.  When they don't, they use color as a proxy -- i.e., they assume that turtles of the same color make good neighbors.
-
-## NETLOGO FEATURES
-
-`n-of` and `sprout` are used to create turtles while ensuring no patch has more than one turtle on it.
-
-When a turtle moves, `move-to` is used to move the turtle to the center of the patch it eventually finds.
-
 ## CREDITS AND REFERENCES
 
 Schelling, T. (1978). Micromotives and Macrobehavior. New York: Norton.
  
 See also a recent Atlantic article:   Rauch, J. (2002). Seeing Around Corners; The Atlantic Monthly; April 2002;Volume 289, No. 4; 35-48. http://www.theatlantic.com/issues/2002/04/rauch.htm
-
-
-## HOW TO CITE
-
-If you mention this model in a publication, we ask that you include these citations for the model itself and for the NetLogo software:
 
 * Wilensky, U. (1997).  NetLogo Segregation model.  http://ccl.northwestern.edu/netlogo/models/Segregation.  Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
 * Wilensky, U. (1999). NetLogo. http://ccl.northwestern.edu/netlogo/. Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
@@ -285,8 +260,6 @@ If you mention this model in a publication, we ask that you include these citati
 ## COPYRIGHT AND LICENSE
 
 Copyright 1997 Uri Wilensky.
-
-![CC BY-NC-SA 3.0](http://i.creativecommons.org/l/by-nc-sa/3.0/88x31.png)
 
 This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 License.  To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/ or send a letter to Creative Commons, 559 Nathan Abbott Way, Stanford, California 94305, USA.
 
